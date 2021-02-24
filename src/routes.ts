@@ -13,7 +13,7 @@ const surveyController = new SurveyController();
 router.post('/users', userController.create);
 router.get('/users', userController.show);
 router.post('/surveys', surveyController.create);
-router.get('/surveys', userController.show);
+router.get('/surveys', surveyController.show);
 
 
 export default router;
