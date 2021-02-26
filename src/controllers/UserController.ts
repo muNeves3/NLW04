@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { getCustomRepository } from "typeorm";
+import User from '../models/User';
 import UsersRepository from "../repositories/UsersRepository";
 import * as Yup from 'yup'
 import AppError from "../Errors/AppError";
@@ -11,10 +12,6 @@ export default class UserController {
       name: Yup.string().required('Nome é obrigatório'),
       email: Yup.string().email().required('email incorreto')
     })
-
-    // if(!(await schema.isValid(request.body))) {
-    //   return response.status(400).json({error: "Validation failed"});
-    // }
 
     try {
       await schema.validate(request.body, { abortEarly: false })
@@ -45,5 +42,39 @@ export default class UserController {
     const users = await usersRepository.find();
 
     return response.json(users);
+  }
+
+  async update(request: Request, response: Response) {
+    const { name, email } = request.body;
+    const { id } = request.params;
+
+    const schema = Yup.object().shape({
+      name: Yup.string().required('Nome é obrigatório'),
+      email: Yup.string().email().required('email incorreto')
+    })
+
+    try {
+      await schema.validate(request.body, { abortEarly: false })
+    } catch(err) {
+      throw new AppError(err);
+    }
+
+    const usersRepository = getCustomRepository(UsersRepository);
+
+    const user = usersRepository.update(id, { name, email });
+
+    return response.status(201).json(user);
+  }
+
+  async delete(request: Request, response: Response) {
+    const { id } = request.params;
+
+    const usersRepository = getCustomRepository(UsersRepository);
+
+    // const userUnexistent = await usersRepository.findOne({ where: { id } });
+
+    await usersRepository.delete(id);
+
+    return response.json({ message: 'User deleted' });
   }
 }
